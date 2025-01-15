@@ -165,7 +165,8 @@ def req(sets: list[str]) -> None:
                 this = pairs.pop(random.randint(0, len(pairs) - 1))
 
                 win.clear()
-                win.addstr(1, curses.COLS // 2 - len(f"ABFRAGE - {name.upper()} ({i + 1}/{len(data)})") // 2, f"ABFRAGE - {name.upper()} ({i + 1}/{len(data)})", curses.A_BOLD)
+                title = f"ABFRAGE - {name.upper()} ({i + 1}/{len(data)})"
+                win.addstr(1, curses.COLS // 2 - len(title) // 2, title[:min(curses.COLS - len(title)//2, len(title))], curses.A_BOLD)
                 win.addstr(3, 5, this[0])
                 win.addstr(5, 5, ">>> ")
                 curses.setsyx(5,9)
