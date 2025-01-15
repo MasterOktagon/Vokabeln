@@ -56,7 +56,7 @@ def rmenu() -> list[str]|int:
                     pre = "> "
                     is_selected = sum([opt_path[f]==opt_path[count] for f in selection])
                     if opt_path[count] == opt_path[selected]: pre = "v "
-                    win.addstr(5 + (winlen := winlen+1), 2, pre + opt_path[count][7:], curses.A_UNDERLINE*is_selected)
+                    win.addstr(5 + (winlen := winlen+1), 2, pre + opt_path[count][7:], curses.A_UNDERLINE*bool(is_selected))
                     last_dir = opt_path[count]
                 if options[count] in ["","Abbruch","OK"] or opt_path[selected] == opt_path[count]:
                     s = copy(options[count])
