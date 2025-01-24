@@ -1,7 +1,4 @@
 
-from termcolor import *
-
-
 def visualize_diff(right, inp)->str:
     #print(right, inp)
     s = ""
@@ -11,7 +8,7 @@ def visualize_diff(right, inp)->str:
         if i >= len(right):
             return s
 
-        elif j >= len(inp):
+        if j >= len(inp):
             s += "$" +right[i:] + "$"
             return s
 
@@ -36,7 +33,7 @@ def visualize_v2(right, inp, depth=0)->tuple[str, int]:
         s += "$" + right + "$"
         return s, len(right)
 
-    elif inp == "":
+    if inp == "":
         s += "$" + right + "$"
         return s, len(right)
 

@@ -25,12 +25,12 @@ def rmenu() -> list[str]|int:
         options: list[str] = []
         opt_info: list[str] = []
         opt_path: list[str] = []
-        for dirpath, dirnames, filenames in os.walk(r"./sets/"):
+        for dir_path, _dir_names, filenames in os.walk(r"./sets/"):
             for file in filenames:
                 options.append(file)
 
-                info = dirpath
-                opt_path.append(dirpath)
+                info = dir_path
+                opt_path.append(dir_path)
                 info += "\n\n" + str(len(manager.load_set(info + "/" + file))) + " Vokabeln"
 
                 opt_info.append(info)
@@ -173,7 +173,9 @@ def req(sets: list[str]) -> None:
 
                 win.refresh()
                 curses.echo()
-                inp = win.getstr(5,9).decode("utf-8")
+                try: inp = win.getstr(5,9).decode("utf-8")
+                except UnicodeDecodeError:
+                    inp = "<UnicodeDecodeError>"
                 curses.noecho()
 
                 if inp == this[1] or inp in this[1].split("/"):
