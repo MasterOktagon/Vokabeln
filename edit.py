@@ -8,6 +8,41 @@ import time
 
 import menu
 
+def new_set_menu(error = "") -> str|int:
+    try:
+        win = curses.initscr()
+        curses.cbreak()
+        curses.noecho()
+        win.keypad(True)
+        curses.curs_set(0)
+        
+        name = "Satznamen wählen"
+        while True:
+            win.clear()
+            win.addstr(1, curses.COLS // 2 - len(name) // 2, name.upper(), curses.A_BOLD)
+            win.addstr(4, 1, "Satzname (leer bricht ab, '/' markiert unterordner):")
+            win.addstr(5, 4, error)
+            win.addstr(6, 5, ">>> ")
+            curses.echo()
+            curses.curs_set(1)
+            try: inp = win.getstr(6, 9).decode("utf-8")
+            except UnicodeDecodeError: continue
+            curses.noecho()
+            curses.curs_set(0)
+
+            if inp == "": return 0
+            if inp.count("/") < 1:  return new_set_menu(f"FEHLER: Satz {inp} ist in keinem Sprachunterordner")
+            inp = "sets/" + inp
+            inp += ".json"
+            
+            if os.path.isfile(inp): return new_set_menu(f"FEHLER: Satz {inp} existiert bereits!")
+            with open(inp, "w") as f:
+                f.write("{}")
+            return inp
+        
+    except:
+        return 0
+
 
 def rmenu() -> str|int:
     try:
@@ -37,9 +72,9 @@ def rmenu() -> str|int:
 
                 opt_info.append(info)
 
-        options += ["", "", "Abbruch"]
-        opt_info += ["", "", ""]
-        opt_path += ["", "", ""]
+        options += ["", "", "Neu", "Abbruch"]
+        opt_info += ["", "", "Erstelle einen neuen Satz", ""]
+        opt_path += ["", "", "", ""]
 
         subwin = win.subwin(4, curses.COLS // 2 - 1)
 
@@ -61,7 +96,7 @@ def rmenu() -> str|int:
                     win.addstr(5 + (winlen := winlen + 1), 2, pre + opt_path[count][7:],
                                curses.A_UNDERLINE * bool(is_selected))
                     last_dir = opt_path[count]
-                if options[count] in ["", "Abbruch", "OK"] or opt_path[selected] == opt_path[count]:
+                if options[count] in ["", "Neu", "Abbruch", "OK"] or opt_path[selected] == opt_path[count]:
                     s = copy(options[count])
                     if "." in s: s = s[:s.rfind(".")]
                     if selected == count: s = "[" + s + "]"
@@ -97,6 +132,9 @@ def rmenu() -> str|int:
                 if options[selected] == "Abbruch":
                     curses.endwin()
                     return 0
+                elif options[selected] == "Neu":
+                    curses.endwin()
+                    return new_set_menu()
                 return opt_path[selected] + "/" + options[selected]
 
     except Exception:
