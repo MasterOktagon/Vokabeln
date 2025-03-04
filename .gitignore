@@ -1,6 +1,6 @@
 __pycache__/*
 sets/*
 meta/*
-
+!meta/lang/*
 
 

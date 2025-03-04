@@ -7,6 +7,7 @@ import checker
 import manager
 import menu
 import random
+from i18 import i18n
 
 import json
 
@@ -20,7 +21,7 @@ def rmenu() -> list[str]|int:
         win.keypad(True)
         curses.curs_set(0)
 
-        name = "Satz wählen"
+        name = i18n("Choose set")
 
         options: list[str] = []
         opt_info: list[str] = []
@@ -31,11 +32,11 @@ def rmenu() -> list[str]|int:
 
                 info = dir_path
                 opt_path.append(dir_path)
-                info += "\n\n" + str(len(manager.load_set(info + "/" + file))) + " Vokabeln"
+                info += "\n\n" + str(len(manager.load_set(info + "/" + file))) + " " + i18n("Vocabulars")
 
                 opt_info.append(info)
 
-        options += ["", "", "OK", "Abbruch"]
+        options += ["", "", i18n("OK"), i18n("Abort")]
         opt_info += ["","","", ""]
         opt_path += ["", "", "", ""]
 
@@ -58,12 +59,12 @@ def rmenu() -> list[str]|int:
                     if opt_path[count] == opt_path[selected]: pre = "v "
                     win.addstr(5 + (winlen := winlen+1), 2, pre + opt_path[count][7:], curses.A_UNDERLINE*bool(is_selected))
                     last_dir = opt_path[count]
-                if options[count] in ["","Abbruch","OK"] or opt_path[selected] == opt_path[count]:
+                if options[count] in ["",i18n("Abort"),i18n("OK")] or opt_path[selected] == opt_path[count]:
                     s = copy(options[count])
                     if "." in s: s = s[:s.rfind(".")]
                     if selected == count: s = "[" + s + "]"
                     win.addstr(5+(winlen := winlen+1), 4 + (selected != count), s, (curses.A_BOLD | curses.A_UNDERLINE)*(selected==count) | (curses.A_UNDERLINE)*(count in selection))
-                    if selected == count and not (options[count] in ["Abbruch","OK"]): subwin.addstr(0,1, s, curses.A_BOLD)
+                    if selected == count and not (options[count] in [i18n("Abort"),i18n("OK")]): subwin.addstr(0,1, s, curses.A_BOLD)
                     for c,s in enumerate(opt_info[selected].split("\n")):
                         subwin.addstr(c+2,1,s)
 
@@ -83,7 +84,7 @@ def rmenu() -> list[str]|int:
 
             elif c == curses.KEY_ENTER or c == 10 or c == 13:
 
-                if options[selected] == "OK":
+                if options[selected] == i18n("OK"):
                     curses.endwin()
                     out: list[str] = []
                     for i in selection:
@@ -91,7 +92,7 @@ def rmenu() -> list[str]|int:
 
                     return out
 
-                if options[selected] == "Abbruch":
+                if options[selected] == i18n("Abort"):
                     curses.endwin()
                     return 0
 
@@ -112,19 +113,19 @@ def req(sets: list[str]) -> None:
     print(lang)
 
     select_mod = ""
-    if (select_mod := menu.menu("Modus wählen", [f"Deutsch-{lang}",f"{lang}-Deutsch","Gemischt","","Abbruch"])) == "Abbruch":
+    if (select_mod := menu.menu(i18n("Choose mode"), [i18n("English-{0}").format(lang),i18n("{0}-English").format(lang),i18n("Random"),"",i18n("Abort")])) == i18n("Abort"):
         return
 
-    print("Modus:",select_mod)
+    print(i18n("Mode")+":",select_mod)
 
     data = {}
     for s in sets:
         data.update(manager.load_set(s))
 
     pairs: list[list[str]] = []
-    if "Deutsch-" in select_mod:
+    if i18n("English-") in select_mod:
         pairs = [[d, data[d]] for d in data.keys()]
-    elif "-Deutsch" in select_mod:
+    elif i18n("-English") in select_mod:
         pairs = [[data[d], d] for d in data.keys()]
     else:
         for d in data.keys():
@@ -165,7 +166,7 @@ def req(sets: list[str]) -> None:
                 this = pairs.pop(random.randint(0, len(pairs) - 1))
 
                 win.clear()
-                title = f"ABFRAGE - {name.upper()} ({i + 1}/{len(data)})"
+                title = i18n("Checking: {0} ({1}/{2})").format(name, i+1, len(data))
                 win.addstr(1, curses.COLS // 2 - len(title) // 2, title[:min(curses.COLS - len(title)//2, len(title))], curses.A_BOLD)
                 win.addstr(3, 5, this[0])
                 win.addstr(5, 5, ">>> ")
@@ -179,7 +180,7 @@ def req(sets: list[str]) -> None:
                 curses.noecho()
 
                 if inp == this[1] or inp in this[1].split("/"):
-                    win.addstr(6,5, "RICHTIG!", curses.color_pair(2) | curses.A_BOLD)
+                    win.addstr(6,5, i18n("CORRECT!"), curses.color_pair(2) | curses.A_BOLD)
                     correct += 1
 
                 else:
@@ -196,9 +197,9 @@ def req(sets: list[str]) -> None:
                                 j += 1
                     except KeyboardInterrupt:
                         win.addstr(6, 9, this[1], curses.color_pair(1))
-                    win.addstr(7, 9, "FALSCH", curses.color_pair(3) | curses.A_BOLD)
+                    win.addstr(7, 9, i18n("WRONG!"), curses.color_pair(3) | curses.A_BOLD)
 
-                win.addstr(9, 5, "beliebiges eingeben um weiter zu gehen. q eingeben um aufzuhoeren: ")
+                win.addstr(9, 5, i18n("Input any to continue. input 'q' to abort: "))
                 win.refresh()
                 while not(sel := win.getch()): pass
                 if sel == ord("q"):
@@ -211,9 +212,9 @@ def req(sets: list[str]) -> None:
 
         win.clear()
 
-        caption = f"AUSWERTUNG - {name.upper()}"
+        caption = i18n("Evaluation: - {0}").format(name)
         win.addstr(1, curses.COLS // 2 - len(caption) // 2,caption, curses.A_BOLD)
-        win.addstr(3, 5, f"PUNKTE: {max(correct, 0)}/{len(data)}", curses.A_BOLD)
+        win.addstr(3, 5, i18n("SCORE:") + f" {max(correct, 0)}/{len(data)}", curses.A_BOLD)
         win.addstr(4, 13, f"{round(max(correct, 0)/len(data)*100, 1)}%", curses.A_BOLD)
 
         with open("meta/scores.json", "r") as f:

@@ -5,6 +5,7 @@ import os
 from copy import *
 import math
 import time
+from i18 import i18n
 
 import menu
 
@@ -16,13 +17,14 @@ def new_set_menu(error = "") -> str|int:
         win.keypad(True)
         curses.curs_set(0)
         
-        name = "Satznamen wählen"
+        name = i18n("Choose set name")
         while True:
             win.clear()
             win.addstr(1, curses.COLS // 2 - len(name) // 2, name.upper(), curses.A_BOLD)
-            win.addstr(4, 1, "Satzname (leer bricht ab, '/' markiert unterordner):")
+            win.addstr(4, 1, i18n("Set name (empty aborts, use '/' for subfolders)"))
             win.addstr(5, 4, error)
             win.addstr(6, 5, ">>> ")
+            curses.setsyx(5, 9)
             curses.echo()
             curses.curs_set(1)
             try: inp = win.getstr(6, 9).decode("utf-8")
@@ -31,11 +33,12 @@ def new_set_menu(error = "") -> str|int:
             curses.curs_set(0)
 
             if inp == "": return 0
-            if inp.count("/") < 1:  return new_set_menu(f"FEHLER: Satz {inp} ist in keinem Sprachunterordner")
-            inp = "sets/" + inp
-            inp += ".json"
             
-            if os.path.isfile(inp): return new_set_menu(f"FEHLER: Satz {inp} existiert bereits!")
+            inp += ".json"
+            if inp.count("/") < 1:  return new_set_menu(i18n("ERROR: Set {0} is not in a language subfolder").format(inp))
+            inp = "sets/" + inp
+            if os.path.isfile(inp): return new_set_menu(i18n("ERROR: Set {0} already exists").format(inp))
+            
             with open(inp, "w") as f:
                 f.write("{}")
             return inp
@@ -54,7 +57,7 @@ def rmenu() -> str|int:
         win.keypad(True)
         curses.curs_set(0)
 
-        name = "Satz wählen (Bearbeitung)"
+        name = i18n("Choose set (editing)")
 
         options: list[str] = []
         opt_info: list[str] = []
@@ -66,14 +69,14 @@ def rmenu() -> str|int:
                 info = dir_path
                 opt_path.append(dir_path)
                 data = manager.load_set(info + "/" + file)
-                info += "\n\n" + str(len(data)) + " Vokabeln\n\n"
+                info += "\n\n" + str(len(data)) + " " + i18n("Vocabulars") + "\n\n"
                 for k in data.keys():
                     info += k + ": " + data[k] +"\n"
 
                 opt_info.append(info)
 
-        options += ["", "", "Neu", "Abbruch"]
-        opt_info += ["", "", "Erstelle einen neuen Satz", ""]
+        options += ["", "", i18n("New"), i18n("Abort")]
+        opt_info += ["", "", i18n("Create a new set"), ""]
         opt_path += ["", "", "", ""]
 
         subwin = win.subwin(4, curses.COLS // 2 - 1)
@@ -96,14 +99,14 @@ def rmenu() -> str|int:
                     win.addstr(5 + (winlen := winlen + 1), 2, pre + opt_path[count][7:],
                                curses.A_UNDERLINE * bool(is_selected))
                     last_dir = opt_path[count]
-                if options[count] in ["", "Neu", "Abbruch", "OK"] or opt_path[selected] == opt_path[count]:
+                if options[count] in ["", i18n("New"), i18n("Abort"), i18n("OK")] or opt_path[selected] == opt_path[count]:
                     s = copy(options[count])
                     if "." in s: s = s[:s.rfind(".")]
                     if selected == count: s = "[" + s + "]"
                     win.addstr(5 + (winlen := winlen + 1), 4 + (selected != count), s,
                                (curses.A_BOLD | curses.A_UNDERLINE) * (selected == count) | (curses.A_UNDERLINE) * (
                                            count in selection))
-                    if selected == count and not (options[count] in ["Abbruch", "OK"]): subwin.addstr(0, 1, s,
+                    if selected == count and not (options[count] in [i18n("Abort"), i18n("OK")]): subwin.addstr(0, 1, s,
                                                                                                       curses.A_BOLD)
 
                     overflow = math.inf
@@ -129,10 +132,10 @@ def rmenu() -> str|int:
 
             elif c == curses.KEY_ENTER or c == 10 or c == 13:
 
-                if options[selected] == "Abbruch":
+                if options[selected] == i18n("Abort"):
                     curses.endwin()
                     return 0
-                elif options[selected] == "Neu":
+                elif options[selected] == i18n("New"):
                     curses.endwin()
                     return new_set_menu()
                 return opt_path[selected] + "/" + options[selected]
@@ -145,7 +148,7 @@ def rmenu() -> str|int:
 def set_menu(s: str):
     data = manager.load_set(s)
 
-    name = "Satz bearbeiten - " + s
+    name = i18n("Edit set - ") + s
     lang = s[s.find("/", 6) + 1: s.find("/", s.find("/", 6) + 1)]
 
     try:
@@ -160,7 +163,7 @@ def set_menu(s: str):
         selected = 0
         opt_selected = 1
 
-        options = ["Tauschen", "Speichern", "Schließen"]
+        options = [i18n("Swap"), i18n("Save"), i18n("Close")]
         saved = True
 
         while True:
@@ -168,11 +171,11 @@ def set_menu(s: str):
             subwin.clear()
             win.addstr(1, curses.COLS // 2 - len(name) // 2, name.upper(), curses.A_BOLD)
             subwin.border()
-            subwin.addstr(0,1, "[Deutsch]", curses.A_BOLD)
+            subwin.addstr(0,1, "[" + i18n("English") + "]", curses.A_BOLD)
             subwin.addstr(0,curses.COLS//2, f"[{lang}]", curses.A_BOLD)
 
             for count, opt in enumerate(options):
-                if opt == "Speichern" and not saved: opt = "Speichern*"
+                if opt == i18n("Save") and not saved: opt = i18n("Save") + "*"
                 if opt_selected == count:
                     win.addstr(3, curses.COLS//(len(options)+1)*(count+1)-(len(opt)+2)//2, f"[{opt}]", curses.A_BOLD | curses.A_UNDERLINE)
                 else:
@@ -194,14 +197,14 @@ def set_menu(s: str):
                     subwin.addstr(curline + 2, curses.COLS//2, data[key] + " "*(curses.COLS//2-len(data[key])-1), (curses.A_REVERSE | curses.A_BOLD) * (selected == i))
 
                     if i == selected:
-                        l = "└   [+] Hinzufügen     [#] Bearbeiten    [-] Löschen"
+                        l = i18n("└   [+] Add            [#] Edit         [-] Delete")
                         subwin.addstr(curline + 3, 1, l+" "*(curses.COLS-2-len(l)), curses.A_REVERSE)
                         curline += 1
 
                     curline += 1
 
             else:
-                l = "    [+] Hinzufügen"
+                l = i18n("└   [+] Add")
                 subwin.addstr(curline + 3, 1, l + " " * (curses.COLS - 2 - len(l)), curses.A_REVERSE)
 
             win.refresh()
@@ -223,10 +226,10 @@ def set_menu(s: str):
                     subwin.clear()
                     win.clear()
 
-                    name2 = "Neues Paar"
+                    name2 = i18n("New pair(s)")
                     win.addstr(1, curses.COLS // 2 - len(name2) // 2, name2.upper(), curses.A_BOLD)
 
-                    win.addstr(3, 5, "Worte eingeben (leer bricht ab, '|' zwischen die Sprachen): ")
+                    win.addstr(3, 5, i18n("Enter words (empty aborts, '|' bteween languages): "))
                     win.addstr(5, 5, ">>> ")
                     curses.setsyx(5, 9)
 
@@ -244,7 +247,7 @@ def set_menu(s: str):
                         data[m[0]] = m[1]
 
                     except IndexError:
-                        win.addstr(7,5,"Nur eine Sprache wurde eingegeben. verwende '|' zwischen den Sprachen!")
+                        win.addstr(7,5,i18n("ERROR: Only one language inserted. use '|' between languages!"))
                         win.refresh()
                         time.sleep(1)
 
@@ -257,10 +260,10 @@ def set_menu(s: str):
                     subwin.clear()
                     win.clear()
 
-                    name2 = "Paar bearbeiten"
+                    name2 = i18n("Edit pair")
                     win.addstr(1, curses.COLS // 2 - len(name2) // 2, name2.upper(), curses.A_BOLD)
 
-                    win.addstr(3, 5, "Worte eingeben (leer bricht ab, '|' zwischen die Sprachen): ")
+                    win.addstr(3, 5, i18n("Enter words (empty aborts, '|' bteween languages): "))
                     win.addstr(5, 5, ">>> " + sel_key + "|" + sel_data)
                     curses.setsyx(5, 9)
 
@@ -279,7 +282,7 @@ def set_menu(s: str):
                         data[m[0]] = m[1]
 
                     except IndexError:
-                        win.addstr(7,5,"Nur eine Sprache wurde eingegeben. verwende '|' zwischen den Sprachen!")
+                        win.addstr(7,5, i18n("ERROR: Only one language inserted. use '|' between languages!"))
                         win.refresh()
                         time.sleep(1)
                         continue
@@ -288,19 +291,19 @@ def set_menu(s: str):
                     break
 
             elif c == curses.KEY_ENTER or c == 10 or c == 13:
-                if options[opt_selected] == "Schließen":
+                if options[opt_selected] == i18n("Close"):
                     if not saved:
-                        if(menu.menu("Ungespeicherte Änderungen!", ["Abbruch", "Schließen"]) == "Schließen"):
+                        if(menu.menu(i18n(), [i18n("Abort"), i18n("Close")]) == i18n("Close")):
                             curses.endwin()
                             return
                     else:
                         curses.endwin()
                         return
-                if options[opt_selected] == "Speichern":
+                if options[opt_selected] == i18n("Save"):
                     manager.save_set(s, data)
                     saved = True
 
-                elif options[opt_selected] == "Tauschen" and len(data) > 0:
+                elif options[opt_selected] == i18n("Swap") and len(data) > 0:
                     sel_key = list(data.keys())[selected]
                     sel_v   = data[sel_key]
                     del data[sel_key]
