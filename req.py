@@ -8,6 +8,7 @@ import manager
 import menu
 import random
 from i18 import i18n
+import getstr
 
 import json
 
@@ -144,7 +145,8 @@ def req(sets: list[str]) -> None:
         curses.init_pair(1, -1, curses.COLOR_RED)
         curses.init_pair(3, curses.COLOR_RED, -1)
         curses.init_pair(2, curses.COLOR_GREEN, -1)
-        curses.init_pair(18, -1, 233)
+        curses.init_pair(4, 6, -1)
+        curses.init_pair(19, -1, 233)
 
         for i in range(21):
             curses.init_pair(19+i, -1, 233+i)
@@ -174,10 +176,11 @@ def req(sets: list[str]) -> None:
 
                 win.refresh()
                 curses.echo()
-                try: inp = win.getstr(5,9).decode("utf-8")
-                except UnicodeDecodeError:
-                    inp = "<UnicodeDecodeError>"
+                inp = getstr.getstr(5,9, win)
                 curses.noecho()
+                if inp == "<exit>":
+                    curses.endwin()
+                    return
 
                 if inp == this[1] or inp in this[1].split("/"):
                     win.addstr(6,5, i18n("CORRECT!"), curses.color_pair(2) | curses.A_BOLD)
@@ -199,18 +202,23 @@ def req(sets: list[str]) -> None:
                         win.addstr(6, 9, this[1], curses.color_pair(1))
                     win.addstr(7, 9, i18n("WRONG!"), curses.color_pair(3) | curses.A_BOLD)
 
-                win.addstr(9, 5, i18n("Input any to continue. input 'q' to abort: "))
-                win.refresh()
-                while not(sel := win.getch()): pass
-                if sel == ord("q"):
+                if getstr.wait(win) != "":
                     curses.endwin()
                     return
+
+                #win.addstr(9, 5, i18n("Input any to continue. input 'q' to abort: "))
+                #win.refresh()
+                #while not(sel := win.getch()): pass
+                #if sel == ord("q"):
+                #    curses.endwin()
+                #    return
 
                 i += 1
 
             pairs = wrong.copy()
 
         win.clear()
+        curses.curs_set(0)
 
         caption = i18n("Evaluation: - {0}").format(name)
         win.addstr(1, curses.COLS // 2 - len(caption) // 2,caption, curses.A_BOLD)

@@ -6,6 +6,7 @@ from copy import *
 import math
 import time
 from i18 import i18n
+import getstr
 
 import menu
 
@@ -27,12 +28,13 @@ def new_set_menu(error = "") -> str|int:
             curses.setsyx(5, 9)
             curses.echo()
             curses.curs_set(1)
-            try: inp = win.getstr(6, 9).decode("utf-8")
+            try: inp = getstr.getstr(6,9, win, "", ".json")
             except UnicodeDecodeError: continue
             curses.noecho()
             curses.curs_set(0)
 
             if inp == "": return 0
+            if inp == "<exit>": return 0
             
             inp += ".json"
             if inp.count("/") < 1:  return new_set_menu(i18n("ERROR: Set {0} is not in a language subfolder").format(inp))
@@ -242,6 +244,7 @@ def set_menu(s: str):
                     curses.curs_set(0)
 
                     if inp == "": break
+                    if inp == "<exit>": break
                     try:
                         m = inp.split("|")
                         data[m[0]] = m[1]
@@ -264,13 +267,13 @@ def set_menu(s: str):
                     win.addstr(1, curses.COLS // 2 - len(name2) // 2, name2.upper(), curses.A_BOLD)
 
                     win.addstr(3, 5, i18n("Enter words (empty aborts, '|' bteween languages): "))
-                    win.addstr(5, 5, ">>> " + sel_key + "|" + sel_data)
+                    win.addstr(5, 5, ">>> ")
                     curses.setsyx(5, 9)
 
                     win.refresh()
                     curses.echo()
                     curses.curs_set(1)
-                    try: inp = win.getstr(5, 9).decode("utf-8")
+                    try: inp = getstr.getstr(5, 9, win, sel_key + "|" + sel_data)
                     except UnicodeDecodeError: continue
                     curses.noecho()
                     curses.curs_set(0)
@@ -293,7 +296,7 @@ def set_menu(s: str):
             elif c == curses.KEY_ENTER or c == 10 or c == 13:
                 if options[opt_selected] == i18n("Close"):
                     if not saved:
-                        if(menu.menu(i18n(), [i18n("Abort"), i18n("Close")]) == i18n("Close")):
+                        if(menu.menu(i18n("Save before closing?"), [i18n("Abort"), i18n("Close")]) == i18n("Close")):
                             curses.endwin()
                             return
                     else:

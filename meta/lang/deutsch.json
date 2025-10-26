@@ -39,5 +39,6 @@
 "WRONG!": "FALSCH!",
 "Input any to continue. input 'q' to abort: ": "beliebiges eingeben um weiter zu gehen. q eingeben um aufzuhoeren: ",
 "Evaluation: - {0}": "Auswertung - {0}",
-"SCORE:": "PUNKTE:"
+"SCORE:": "PUNKTE:",
+"Save before closing?": "Ungespeicherte Änderungen. Vor dem Schließen speichern?"
 }
