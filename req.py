@@ -170,14 +170,14 @@ def req(sets: list[str]) -> None:
                 win.clear()
                 title = i18n("Checking: {0} ({1}/{2})").format(name, i+1, len(data))
                 win.addstr(1, curses.COLS // 2 - len(title) // 2, title[:min(curses.COLS - len(title)//2, len(title))], curses.A_BOLD)
-                win.addstr(3, 5, lang + ":")
-                win.addstr(3, 7 + len(lang), this[0], curses.A_BOLD)
-                win.addstr(5, 5, ">>> ")
+                win.addstr(3, 5, i18n("English") + ":")
+                win.addstr(3, 7 + len(i18n("English")), this[0], curses.A_BOLD)
+                win.addstr(5, 5, lang + ">>> ")
                 curses.setsyx(5,9)
 
                 win.refresh()
                 curses.echo()
-                inp = getstr.getstr(5,9, win)
+                inp = getstr.getstr(5,9 + len(lang), win)
                 inp = "/".join([s.strip() for s in inp.split("/")])
                 curses.noecho()
                 if inp == "<exit>":
